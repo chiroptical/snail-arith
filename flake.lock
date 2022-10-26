@@ -64,10 +64,10 @@
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
-        "snail-shell": "snail-shell"
+        "snail-shell-src": "snail-shell-src"
       }
     },
-    "snail-shell": {
+    "snail-shell-src": {
       "inputs": {
         "flake-utils": "flake-utils_2",
         "nixpkgs": "nixpkgs_2"
