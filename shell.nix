@@ -1,10 +1,15 @@
 {
   pkgs,
+  snail-shell,
   ...
 }:
 pkgs.mkShell {
   inputsFrom = [
-    (import ./snail-arith.nix pkgs).env
+    (import ./snail-arith.nix {
+      inherit pkgs;
+      inherit snail-shell;
+    })
+    .env
   ];
   buildInputs = with pkgs; [
     haskell-language-server

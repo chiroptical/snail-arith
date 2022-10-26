@@ -19,14 +19,17 @@
         inherit system;
         config.allowBroken = true;
       };
-      snail-arith = pkgs.callPackage ./snail-arith.nix {};
+      snail-arith = pkgs.callPackage ./snail-arith.nix {
+        snail-shell = snail-shell.packages.${system}.snail-shell;
+      };
     in {
       devShell = import ./shell.nix {
         inherit pkgs;
+        snail-shell = snail-shell.packages.${system}.snail-shell;
       };
       defaultPackage = snail-arith;
       packages = flake-utils.lib.flattenTree {
-       inherit snail-arith;
+        inherit snail-arith;
       };
     });
 }
