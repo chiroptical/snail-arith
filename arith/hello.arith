@@ -1,0 +1,21 @@
+(true)
+
+(false)
+
+(zero)
+
+(succ zero)
+
+(pred zero)
+
+(isZero zero) -- (true)
+(isZero (zero)) -- (true)
+(isZero true) -- (false)
+(isZero false) -- (false)
+
+(isZero (succ zero)) -- (false)
+(isZero (pred (succ zero))) -- (true)
+
+(if (true) (zero) (succ zero)) -- (zero)
+
+(if (false) (zero) (succ zero)) -- (succ zero)

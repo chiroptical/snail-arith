@@ -3,6 +3,9 @@ OPTIONS := -Wall
 build: hpack
 	cabal build --ghc-options='${OPTIONS}'
 
+run: hpack
+	cabal run
+
 hpack:
 	hpack .
 
@@ -25,4 +28,4 @@ clean:
 hlint:
 	hlint .
 
-.PHONY: build hpack test format format-check ghcid clean hlint
+.PHONY: build run hpack test format format-check ghcid clean hlint

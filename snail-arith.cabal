@@ -35,6 +35,24 @@ library
   build-depends:
       base >=4.7 && <5
     , snail-shell
+    , text
+  default-language: Haskell2010
+
+executable snail-arith
+  main-is: Main.hs
+  other-modules:
+      Paths_snail_arith
+  hs-source-dirs:
+      app
+  default-extensions:
+      ImportQualifiedPost
+      LambdaCase
+      OverloadedStrings
+  build-depends:
+      base >=4.7 && <5
+    , snail-arith
+    , snail-shell
+    , text
   default-language: Haskell2010
 
 test-suite snail-arith-test
@@ -53,4 +71,5 @@ test-suite snail-arith-test
       base >=4.7 && <5
     , snail-arith
     , snail-shell
+    , text
   default-language: Haskell2010
