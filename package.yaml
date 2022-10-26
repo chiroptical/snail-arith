@@ -20,7 +20,6 @@ description:         The arith programming language from Types and Programming L
 
 dependencies:
 - base >= 4.7 && < 5
-- snail-shell
 
 default-extensions:
 - ImportQualifiedPost
