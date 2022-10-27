@@ -27,11 +27,9 @@ snailToArith = \case
   SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "zero")] -> ATrue
   SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "true")] -> AFalse
   SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "false")] -> AFalse
-  SExpression prefix [l@(Lexeme (_, "isZero")), SExpression _ expr] ->
-    snailToArith $ SExpression prefix (l : expr)
+  SExpression prefix [l@(Lexeme (_, "isZero")), expr] -> IsZero $ snailToArith expr
   SExpression _ sexpr@(Lexeme (_, "isZero") : _) ->
-    error $ show sexpr
-    -- error "isZero can take a lexeme or expression, i.e. `isZero zero` or `isZero (zero)`"
+    error "isZero can take a lexeme or expression, i.e. `isZero zero` or `isZero (zero)`"
 
   _ -> ATrue
 
