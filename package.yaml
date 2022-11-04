@@ -20,16 +20,19 @@ description:         The arith programming language from Types and Programming L
 
 dependencies:
 - base >= 4.7 && < 5
-- text
-- snail-shell
 
 default-extensions:
 - ImportQualifiedPost
 - LambdaCase
 - OverloadedStrings
+- DerivingStrategies
 
 library:
   source-dirs: src
+  dependencies:
+    - text
+    - transformers
+    - snail-shell
 
 executables:
   snail-arith:

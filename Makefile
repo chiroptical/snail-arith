@@ -1,4 +1,4 @@
-OPTIONS := -Wall
+OPTIONS := -Weverything -Wno-missing-safe-haskell-mode -Wno-implicit-prelude -Wno-missing-export-lists -Wno-missing-import-lists -Wno-missing-kind-signatures -Wno-safe -Wno-missed-specialisations
 
 build: hpack
 	cabal build --ghc-options='${OPTIONS}'
