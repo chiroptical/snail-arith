@@ -106,17 +106,6 @@ snailToArith = \case
     -- Catch-all for anything we may have missed...
     _ -> throwE NotImplementedYet
 
-sExpressionToString :: SExpression -> String
-sExpressionToString = \case
-    TextLiteral (_, txt) -> "\"" <> Text.unpack txt <> "\""
-    Lexeme (_, lexeme) -> Text.unpack lexeme
-    SExpression Nothing exprs ->
-        let strings = unwords $ sExpressionToString <$> exprs
-         in "(" <> strings <> ")"
-    SExpression (Just c) exprs ->
-        let strings = unwords $ sExpressionToString <$> exprs
-         in pure c <> "(" <> strings <> ")"
-
 main :: IO ()
 main = do
     eSExpressions <- readSnailFile "./arith/hello.arith"
@@ -124,4 +113,4 @@ main = do
         Left err -> print err
         Right snailAsts -> forM_ snailAsts $ \snail -> do
             let arith = runExcept $ snailToArith snail
-            putStrLn $ sExpressionToString snail <> " ==> " <> show arith
+            putStrLn $ Text.unpack (toText snail) <> " ==> " <> show arith
