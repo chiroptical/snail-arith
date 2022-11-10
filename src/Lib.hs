@@ -1,6 +1,6 @@
 module Lib where
 
-import Control.Monad (forM_)
+import Control.Monad (forM, forM_)
 import Control.Monad.Trans.Except
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -24,6 +24,8 @@ data ArithError
     | KeywordOnlyAcceptsOneExpression Text
     | IfGivenInvalidExpression ArithAST
     | NotImplementedYet
+    | EmptyExpression
+    | InvalidExpression
     deriving stock (Eq, Show)
 
 isZero :: ArithAST -> Except ArithError ArithAST
@@ -63,13 +65,31 @@ ifE expr t f =
         AFalse -> pure f
         _ -> throwE $ IfGivenInvalidExpression expr
 
+flatten :: [SExpression] -> [SExpression]
+flatten = \case
+    [] -> []
+    x@[Lexeme{}] -> x
+    x@[TextLiteral{}] -> x
+    [SExpression _ x] -> x
+    (SExpression _ x : rest) -> flatten x <> flatten rest
+
 snailToArith :: SExpression -> Except ArithError ArithAST
 snailToArith = \case
+    -- no text literals
     TextLiteral _ -> throwE TextLiteralUnsupported
+    SExpression _ ((TextLiteral _) : _ : _) -> throwE TextLiteralUnsupported
+    -- empty expression is not valid arith
+    SExpression _ [] -> throwE EmptyExpression
+    -- true cases
     Lexeme (_, "true") -> pure ATrue
+    SExpression _ [Lexeme (_, "true"), _] -> throwE InvalidExpression
+    -- false cases
     Lexeme (_, "false") -> pure AFalse
+    SExpression _ [Lexeme (_, "false"), _] -> throwE InvalidExpression
+    -- zero cases
     Lexeme (_, "zero") -> pure Zero
-    Lexeme (_, unknown) -> throwE $ UnknownLexeme unknown
+    SExpression _ [Lexeme (_, "zero"), _] -> throwE InvalidExpression
+    -- recursive single expression case
     SExpression _ [expr] -> snailToArith expr
     -- 'isZero' cases
     SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "zero")] -> pure ATrue
@@ -99,12 +119,11 @@ snailToArith = \case
         false' <- snailToArith falseExpr
         ifE expr' true' false'
 
-    -- TODO...
-    SExpression _ [] -> throwE NotImplementedYet
-    SExpression _ ((TextLiteral _) : _ : _) -> throwE NotImplementedYet
-    SExpression _ ((SExpression _ _) : _ : _) -> throwE NotImplementedYet
-    -- Catch-all for anything we may have missed...
-    _ -> throwE NotImplementedYet
+    -- Any other lexemes are unknown
+    Lexeme (_, unknown) -> throwE $ UnknownLexeme unknown
+    SExpression _ [Lexeme (_, unknown), _] -> throwE $ UnknownLexeme unknown
+    -- expression of expressions
+    SExpression c exprs -> snailToArith . SExpression c $ flatten exprs
 
 main :: IO ()
 main = do

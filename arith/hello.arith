@@ -25,3 +25,11 @@
 (pred (pred (succ (succ (succ zero))))) -- (succ zero)
 
 (pred (succ (succ (pred (succ zero))))) -- (succ zero)
+
+() -- ()
+
+(((isZero) ((zero)))) -- (true)
+
+(((isZero) ((succ zero)))) -- (false)
+
+(((true) ((true)))) -- ()
