@@ -1,8 +1,8 @@
 {
   pkgs,
-  snail-shell,
+  snail,
   ...
 }:
-pkgs.haskell.packages.ghc924.extend (final: prev: {
-  "snail-shell" = snail-shell;
+pkgs.haskell.packages.ghc94.extend (final: prev: {
+  "snail" = snail;
 })

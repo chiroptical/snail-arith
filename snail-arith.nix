@@ -1,10 +1,10 @@
 {
   pkgs,
-  snail-shell,
+  snail,
   ...
 }: let
   haskell = pkgs.callPackage ./nix/haskell.nix {
-    inherit snail-shell;
+    inherit snail;
   };
 in
   haskell.callCabal2nix "snail-arith" ./. {}

@@ -1,13 +1,13 @@
 {
   pkgs,
-  snail-shell,
+  snail,
   ...
 }:
 pkgs.mkShell {
   inputsFrom = [
     (import ./snail-arith.nix {
       inherit pkgs;
-      inherit snail-shell;
+      inherit snail;
     })
     .env
   ];

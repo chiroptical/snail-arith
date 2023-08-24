@@ -4,14 +4,14 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    snail-shell-src.url = "github:chiroptical/snail-shell";
+    snail-src.url = "github:chiroptical/snail";
   };
 
   outputs = {
-    self,
+    # self,
     nixpkgs,
     flake-utils,
-    snail-shell-src,
+    snail-src,
     ...
   }:
     flake-utils.lib.eachSystem ["x86_64-linux"] (system: let
@@ -19,15 +19,15 @@
         inherit system;
         config.allowBroken = true;
       };
-      snail-shell = snail-shell-src.packages.${system}.snail-shell;
+      snail = snail-src.packages.${system}.snail;
       snail-arith = import ./snail-arith.nix {
         inherit pkgs;
-        inherit snail-shell;
+        inherit snail;
       };
     in {
       devShell = import ./shell.nix {
         inherit pkgs;
-        inherit snail-shell;
+        inherit snail;
       };
       defaultPackage = snail-arith;
       packages = flake-utils.lib.flattenTree {
