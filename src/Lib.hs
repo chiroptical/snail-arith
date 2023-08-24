@@ -65,33 +65,28 @@ ifE expr t f =
         AFalse -> pure f
         _ -> throwE $ IfGivenInvalidExpression expr
 
-flatten :: [SnailAst] -> [SnailAst]
-flatten = \case
-    [] -> []
-    x@[Lexeme{}] -> x
-    x@[TextLiteral{}] -> x
-    [SExpression _ x] -> x
-    (SExpression _ x : rest) -> flatten x <> flatten rest
-    expr -> error $ show expr
+unwrap :: SnailAst -> SnailAst
+unwrap = \case
+    SExpression _ [x] -> x
+    expr -> expr
+
+parseLeaf :: Text -> Except ArithError ArithAST
+parseLeaf = \case
+    "true" -> pure ATrue
+    "false" -> pure AFalse
+    "zero" -> pure Zero
+    lexeme -> throwE $ UnknownLexeme lexeme
+
 
 snailToArith :: SnailAst -> Except ArithError ArithAST
 snailToArith = \case
     -- no text literals
     TextLiteral _ -> throwE TextLiteralUnsupported
-    SExpression _ ((TextLiteral _) : _ : _) -> throwE TextLiteralUnsupported
     -- empty expression is not valid arith
     SExpression _ [] -> throwE EmptyExpression
-    -- true cases
-    Lexeme (_, "true") -> pure ATrue
-    SExpression _ [Lexeme (_, "true"), _] -> throwE InvalidExpression
-    -- false cases
-    Lexeme (_, "false") -> pure AFalse
-    SExpression _ [Lexeme (_, "false"), _] -> throwE InvalidExpression
-    -- zero cases
-    Lexeme (_, "zero") -> pure Zero
-    SExpression _ [Lexeme (_, "zero"), _] -> throwE InvalidExpression
-    -- recursive single expression case
-    SExpression _ [expr] -> snailToArith expr
+    -- parse lexemes
+    Lexeme (_, lexeme) -> parseLeaf lexeme
+    SExpression _ [Lexeme (_, lexeme)] -> parseLeaf lexeme
     -- 'isZero' cases
     SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "zero")] -> pure ATrue
     SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "true")] ->
@@ -119,12 +114,12 @@ snailToArith = \case
         true' <- snailToArith trueExpr
         false' <- snailToArith falseExpr
         ifE expr' true' false'
-
-    -- Any other lexemes are unknown
-    Lexeme (_, unknown) -> throwE $ UnknownLexeme unknown
-    SExpression _ [Lexeme (_, unknown), _] -> throwE $ UnknownLexeme unknown
+    -- Any other statements aren't allowed
+    SExpression _ (Lexeme (_, _) : _) ->
+        throwE InvalidExpression
     -- expression of expressions
-    SExpression c exprs -> snailToArith . SExpression c $ flatten exprs
+    SExpression c exprs ->
+        snailToArith . unwrap . SExpression c $ unwrap <$> exprs
 
 main :: IO ()
 main = do

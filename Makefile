@@ -13,7 +13,7 @@ test: hpack
 	cabal test --ghc-options='${OPTIONS}'
 
 format:
-	alejandra .
+	alejandra --quiet .
 	find src/ test/ -name "*.hs" -exec fourmolu -i -o '-XTypeApplications' -o '-XImportQualifiedPost' {} +
 
 format-check:
