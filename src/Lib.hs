@@ -1,10 +1,10 @@
 module Lib where
 
-import Control.Monad (forM, forM_)
+import Control.Monad (forM_)
 import Control.Monad.Trans.Except
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Snail.Shell
+import Snail
 
 data ArithAST
     = ATrue
@@ -65,15 +65,16 @@ ifE expr t f =
         AFalse -> pure f
         _ -> throwE $ IfGivenInvalidExpression expr
 
-flatten :: [SExpression] -> [SExpression]
+flatten :: [SnailAst] -> [SnailAst]
 flatten = \case
     [] -> []
     x@[Lexeme{}] -> x
     x@[TextLiteral{}] -> x
     [SExpression _ x] -> x
     (SExpression _ x : rest) -> flatten x <> flatten rest
+    expr -> error $ show expr
 
-snailToArith :: SExpression -> Except ArithError ArithAST
+snailToArith :: SnailAst -> Except ArithError ArithAST
 snailToArith = \case
     -- no text literals
     TextLiteral _ -> throwE TextLiteralUnsupported
