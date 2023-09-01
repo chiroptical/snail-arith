@@ -65,11 +65,6 @@ ifE expr t f =
         AFalse -> pure f
         _ -> throwE $ IfGivenInvalidExpression expr
 
-unwrap :: SnailAst -> SnailAst
-unwrap = \case
-    SExpression _ [x] -> x
-    expr -> expr
-
 parseLeaf :: Text -> Except ArithError ArithAST
 parseLeaf = \case
     "true" -> pure ATrue
@@ -83,43 +78,43 @@ snailToArith = \case
     -- no text literals
     TextLiteral _ -> throwE TextLiteralUnsupported
     -- empty expression is not valid arith
-    SExpression _ [] -> throwE EmptyExpression
+    SExpression _ _ [] -> throwE EmptyExpression
     -- parse lexemes
     Lexeme (_, lexeme) -> parseLeaf lexeme
-    SExpression _ [Lexeme (_, lexeme)] -> parseLeaf lexeme
+    SExpression _ _ [Lexeme (_, lexeme)] -> parseLeaf lexeme
     -- 'isZero' cases
-    SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "zero")] -> pure ATrue
-    SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "true")] ->
+    SExpression _ _ [Lexeme (_, "isZero"), Lexeme (_, "zero")] -> pure ATrue
+    SExpression _ _ [Lexeme (_, "isZero"), Lexeme (_, "true")] ->
         throwE $ UnableToAcceptBoolean "isZero"
-    SExpression _ [Lexeme (_, "isZero"), Lexeme (_, "false")] ->
+    SExpression _ _ [Lexeme (_, "isZero"), Lexeme (_, "false")] ->
         throwE $ UnableToAcceptBoolean "isZero"
-    SExpression _ [Lexeme (_, "isZero"), expr] -> isZero =<< snailToArith expr
-    SExpression _ (Lexeme (_, "isZero") : _) ->
+    SExpression _ _ [Lexeme (_, "isZero"), expr] -> isZero =<< snailToArith expr
+    SExpression _ _ (Lexeme (_, "isZero") : _) ->
         throwE $ KeywordOnlyAcceptsOneExpression "isZero"
     -- 'succ' cases
-    SExpression _ [Lexeme (_, "succ"), Lexeme (_, "zero")] -> pure $ Succ Zero
-    SExpression _ [Lexeme (_, "succ"), expr] -> succE =<< snailToArith expr
-    SExpression _ (Lexeme (_, "succ") : _) ->
+    SExpression _ _ [Lexeme (_, "succ"), Lexeme (_, "zero")] -> pure $ Succ Zero
+    SExpression _ _ [Lexeme (_, "succ"), expr] -> succE =<< snailToArith expr
+    SExpression _ _ (Lexeme (_, "succ") : _) ->
         throwE $ KeywordOnlyAcceptsOneExpression "succ"
     -- 'pred' cases
-    SExpression _ [Lexeme (_, "pred"), Lexeme (_, "zero")] -> pure Zero
-    SExpression _ [Lexeme (_, "pred"), expr] -> predE =<< snailToArith expr
-    SExpression _ (Lexeme (_, "pred") : _) ->
+    SExpression _ _ [Lexeme (_, "pred"), Lexeme (_, "zero")] -> pure Zero
+    SExpression _ _ [Lexeme (_, "pred"), expr] -> predE =<< snailToArith expr
+    SExpression _ _ (Lexeme (_, "pred") : _) ->
         throwE $ KeywordOnlyAcceptsOneExpression "pred"
     -- 'if' cases
-    SExpression _ [Lexeme (_, "if"), Lexeme (_, "true"), expr, _] -> snailToArith expr
-    SExpression _ [Lexeme (_, "if"), Lexeme (_, "false"), _, expr] -> snailToArith expr
-    SExpression _ [Lexeme (_, "if"), expr, trueExpr, falseExpr] -> do
+    SExpression _ _ [Lexeme (_, "if"), Lexeme (_, "true"), expr, _] -> snailToArith expr
+    SExpression _ _ [Lexeme (_, "if"), Lexeme (_, "false"), _, expr] -> snailToArith expr
+    SExpression _ _ [Lexeme (_, "if"), expr, trueExpr, falseExpr] -> do
         expr' <- snailToArith expr
         true' <- snailToArith trueExpr
         false' <- snailToArith falseExpr
         ifE expr' true' false'
     -- Any other statements aren't allowed
-    SExpression _ (Lexeme (_, _) : _) ->
+    SExpression _ _ (Lexeme (_, _) : _) ->
         throwE InvalidExpression
     -- expression of expressions
-    SExpression c exprs ->
-        snailToArith . unwrap . SExpression c $ unwrap <$> exprs
+    SExpression c b exprs ->
+        snailToArith . unwrap . SExpression c b $ unwrap <$> exprs
 
 main :: IO ()
 main = do
