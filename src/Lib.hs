@@ -72,7 +72,6 @@ parseLeaf = \case
     "zero" -> pure Zero
     lexeme -> throwE $ UnknownLexeme lexeme
 
-
 snailToArith :: SnailAst -> Except ArithError ArithAST
 snailToArith = \case
     -- no text literals

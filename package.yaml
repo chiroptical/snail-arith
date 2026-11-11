@@ -32,7 +32,7 @@ library:
   dependencies:
     - text
     - transformers
-    - snail
+    - snail == 0.1.2.2
 
 executables:
   snail-arith:
@@ -51,3 +51,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - snail-arith
+    - hspec >= 2.11.8 && < 2.12
+    - hspec-discover >= 2.11.8 && < 2.12

@@ -1,81 +1,82 @@
 {
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    haskell-flake.url = "github:srid/haskell-flake";
-    snail.url = "github:chiroptical/snail";
+  description = "The arith language from Types and Programming Languages";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+  inputs.snail = {
+    url = "github:chiroptical/snail/v0.1.2.2";
+    flake = false;
   };
-  outputs = inputs @ {
-    self,
-    nixpkgs,
-    flake-parts,
-    ...
-  }:
-    flake-parts.lib.mkFlake {inherit inputs;} {
-      systems = nixpkgs.lib.systems.flakeExposed;
-      imports = [inputs.haskell-flake.flakeModule];
 
-      perSystem = {
-        self',
-        pkgs,
-        ...
-      }: {
-        # Typically, you just want a single project named "default". But
-        # multiple projects are also possible, each using different GHC version.
-        haskellProjects.default = {
-          # The base package set representing a specific GHC version.
-          # By default, this is pkgs.haskellPackages.
-          # You may also create your own. See https://zero-to-flakes.com/haskell-flake/package-set
-          # basePackages = pkgs.haskellPackages;
-
-          # Extra package information. See https://zero-to-flakes.com/haskell-flake/dependency
-          #
-          # Note that local packages are automatically included in `packages`
-          # (defined by `defaults.packages` option).
-          #
-          packages = {
-            # aeson.source = "1.5.0.0"; # Hackage version override
-            snail.source = inputs.snail;
-          };
-          # settings = {
-          #   aeson = {
-          #     check = false;
-          #   };
-          #   relude = {
-          #     haddock = false;
-          #     broken = false;
-          #   };
-          # };
-          settings = {
-            text-display = {
-              broken = false;
-            };
-            # TODO: Need to include test files in nix flake?
-            snail = {
-              check = false;
-            };
-          };
-
-          devShell = {
-            # Enabled by default
-            #enable = true;
-
-            # Programs you want to make available in the shell.
-            # Default programs can be disabled by setting to 'null'
-            tools = hp: {
-              fourmolu = hp.fourmolu;
-              hpack = hp.hpack;
-              hlint = hp.hlint;
-              ghcid = hp.ghcid;
-              alejandra = pkgs.alejandra;
-            };
-
-            hlsCheck.enable = true;
-          };
+  outputs =
+    {
+      self,
+      nixpkgs,
+      snail,
+    }:
+    let
+      supportedSystems = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "x86_64-linux"
+      ];
+      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+      nixFormatter =
+        pkgs:
+        pkgs.nixfmt-tree.override {
+          settings.tree-root-file = "flake.nix";
         };
+    in
+    {
+      devShells = forAllSystems (system: {
+        default = nixpkgs.legacyPackages.${system}.callPackage ./shell.nix {
+          nixFormatter = self.formatter.${system};
+          snailSrc = snail;
+        };
+      });
 
-        # haskell-flake doesn't set the default package, but you can do it here.
-        packages.default = self'.packages.snail-arith;
-      };
+      formatter = forAllSystems (system: nixFormatter nixpkgs.legacyPackages.${system});
+
+      packages = forAllSystems (
+        system:
+        let
+          snail-arith = import ./snail-arith.nix {
+            pkgs = nixpkgs.legacyPackages.${system};
+            snailSrc = snail;
+          };
+        in
+        {
+          inherit snail-arith;
+          default = snail-arith;
+        }
+      );
+
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          test = pkgs.haskell.lib.doCheck self.packages.${system}.snail-arith;
+          format =
+            pkgs.runCommand "snail-arith-format"
+              {
+                nativeBuildInputs = [
+                  pkgs.findutils
+                  pkgs.gnumake
+                  pkgs.haskellPackages.fourmolu
+                  self.formatter.${system}
+                ];
+              }
+              ''
+                cp -R ${self} source
+                chmod -R u+w source
+                cd source
+                make format-check
+                touch "$out"
+              '';
+        }
+      );
     };
 }
