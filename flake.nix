@@ -4,7 +4,7 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
   inputs.snail = {
-    url = "github:chiroptical/snail/v0.1.2.2";
+    url = "github:chiroptical/snail/v1.0.0";
     flake = false;
   };
 
