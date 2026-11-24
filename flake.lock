@@ -25,16 +25,16 @@
     "snail": {
       "flake": false,
       "locked": {
-        "lastModified": 1794404249,
-        "narHash": "sha256-nLzLOf6dJZ7mK/m5QjliZwC6nokIROQwPxQxzLTAEKo=",
+        "lastModified": 1795530613,
+        "narHash": "sha256-cZ9AM1ZJLSpHVLkJCy9soewE7H8dpKMizVzJIHcdsgg=",
         "owner": "chiroptical",
         "repo": "snail",
-        "rev": "101b930fb9416b35f0f10eaca3258acbfe725aad",
+        "rev": "7c984fb13674b4a19ec70abb5bea2536f4237d39",
         "type": "github"
       },
       "original": {
         "owner": "chiroptical",
-        "ref": "v0.1.2.2",
+        "ref": "v1.0.0",
         "repo": "snail",
         "type": "github"
       }
